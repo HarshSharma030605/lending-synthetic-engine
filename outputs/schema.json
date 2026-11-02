@@ -1,0 +1,168 @@
+{
+  "project_name": "lending-synthetic-engine",
+  "seed": 20261022,
+  "architecture": "Decoupled Deterministic Pipeline (Generator -> Rules -> Validator)",
+  "version": "1.0.0",
+  "total_entities": 10,
+  "entities": {
+    "loan_products": {
+      "entity_type": "Core Dimension",
+      "primary_key": "product_id",
+      "fields": {
+        "product_id": { "type": "VARCHAR(255)", "nullable": false },
+        "product_name": { "type": "VARCHAR(255)", "nullable": false },
+        "min_principal": { "type": "DECIMAL(15,2)", "nullable": false },
+        "max_principal": { "type": "DECIMAL(15,2)", "nullable": false },
+        "min_term_months": { "type": "INT", "nullable": false },
+        "max_term_months": { "type": "INT", "nullable": false },
+        "base_interest_rate": { "type": "DECIMAL(5,4)", "nullable": false }
+      },
+      "foreign_keys": []
+    },
+    "applicants": {
+      "entity_type": "Core Master",
+      "primary_key": "applicant_id",
+      "fields": {
+        "applicant_id": { "type": "VARCHAR(255)", "nullable": false },
+        "first_name": { "type": "VARCHAR(255)", "nullable": false },
+        "last_name": { "type": "VARCHAR(255)", "nullable": false },
+        "dob": { "type": "DATE", "nullable": false },
+        "email": { "type": "VARCHAR(255)", "nullable": false },
+        "phone": { "type": "VARCHAR(255)", "nullable": false },
+        "employment_status_flag": { "type": "BOOLEAN", "nullable": false },
+        "created_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": []
+    },
+    "employments": {
+      "entity_type": "Core Detail",
+      "primary_key": "employment_id",
+      "fields": {
+        "employment_id": { "type": "VARCHAR(255)", "nullable": false },
+        "applicant_id": { "type": "VARCHAR(255)", "nullable": false },
+        "employer_name": { "type": "VARCHAR(255)", "nullable": true },
+        "job_title": { "type": "VARCHAR(255)", "nullable": true },
+        "tenure_months": { "type": "INT", "nullable": false },
+        "employment_type": { "type": "VARCHAR(255)", "nullable": false },
+        "monthly_income": { "type": "DECIMAL(15,2)", "nullable": false },
+        "created_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "applicant_id", "references": "applicants.applicant_id" }
+      ]
+    },
+    "income_records": {
+      "entity_type": "Core Detail",
+      "primary_key": "income_record_id",
+      "fields": {
+        "income_record_id": { "type": "VARCHAR(255)", "nullable": false },
+        "applicant_id": { "type": "VARCHAR(255)", "nullable": false },
+        "employment_id": { "type": "VARCHAR(255)", "nullable": false },
+        "verified_monthly_income": { "type": "DECIMAL(15,2)", "nullable": false },
+        "verification_source": { "type": "VARCHAR(255)", "nullable": false },
+        "effective_date": { "type": "DATE", "nullable": false },
+        "created_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "applicant_id", "references": "applicants.applicant_id" },
+        { "field": "employment_id", "references": "employments.employment_id" }
+      ]
+    },
+    "credit_facilities": {
+      "entity_type": "Core Detail",
+      "primary_key": "facility_id",
+      "fields": {
+        "facility_id": { "type": "VARCHAR(255)", "nullable": false },
+        "applicant_id": { "type": "VARCHAR(255)", "nullable": false },
+        "facility_type": { "type": "VARCHAR(255)", "nullable": false },
+        "current_balance": { "type": "DECIMAL(15,2)", "nullable": false },
+        "monthly_payment": { "type": "DECIMAL(15,2)", "nullable": false },
+        "status": { "type": "VARCHAR(255)", "nullable": false },
+        "created_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "applicant_id", "references": "applicants.applicant_id" }
+      ]
+    },
+    "loan_applications": {
+      "entity_type": "Core Transaction",
+      "primary_key": "application_id",
+      "fields": {
+        "application_id": { "type": "VARCHAR(255)", "nullable": false },
+        "applicant_id": { "type": "VARCHAR(255)", "nullable": false },
+        "product_id": { "type": "VARCHAR(255)", "nullable": false },
+        "requested_principal": { "type": "DECIMAL(15,2)", "nullable": false },
+        "requested_term_months": { "type": "INT", "nullable": false },
+        "application_status": { "type": "VARCHAR(255)", "nullable": false },
+        "applied_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "applicant_id", "references": "applicants.applicant_id" },
+        { "field": "product_id", "references": "loan_products.product_id" }
+      ]
+    },
+    "documents": {
+      "entity_type": "Core Detail",
+      "primary_key": "document_id",
+      "fields": {
+        "document_id": { "type": "VARCHAR(255)", "nullable": false },
+        "application_id": { "type": "VARCHAR(255)", "nullable": false },
+        "document_type": { "type": "VARCHAR(255)", "nullable": false },
+        "verification_status": { "type": "VARCHAR(255)", "nullable": false },
+        "uploaded_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "application_id", "references": "loan_applications.application_id" }
+      ]
+    },
+    "affordability_checks": {
+      "entity_type": "Derived Risk Analytics",
+      "primary_key": "check_id",
+      "fields": {
+        "check_id": { "type": "VARCHAR(255)", "nullable": false },
+        "application_id": { "type": "VARCHAR(255)", "nullable": false },
+        "gross_monthly_income": { "type": "DECIMAL(15,2)", "nullable": false },
+        "total_existing_monthly_debt": { "type": "DECIMAL(15,2)", "nullable": false },
+        "proposed_emi": { "type": "DECIMAL(15,2)", "nullable": false },
+        "dti_ratio": { "type": "DECIMAL(5,4)", "nullable": false },
+        "disposable_income": { "type": "DECIMAL(15,2)", "nullable": false },
+        "affordability_passed": { "type": "BOOLEAN", "nullable": false },
+        "created_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "application_id", "references": "loan_applications.application_id" }
+      ]
+    },
+    "decisions": {
+      "entity_type": "Derived Underwriting",
+      "primary_key": "decision_id",
+      "fields": {
+        "decision_id": { "type": "VARCHAR(255)", "nullable": false },
+        "application_id": { "type": "VARCHAR(255)", "nullable": false },
+        "decision_outcome": { "type": "VARCHAR(255)", "nullable": false },
+        "rule_citations": { "type": "TEXT", "nullable": false },
+        "decided_at": { "type": "TIMESTAMP", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "application_id", "references": "loan_applications.application_id" }
+      ]
+    },
+    "repayment_schedules": {
+      "entity_type": "Derived Amortization",
+      "primary_key": "schedule_id",
+      "fields": {
+        "schedule_id": { "type": "VARCHAR(255)", "nullable": false },
+        "application_id": { "type": "VARCHAR(255)", "nullable": false },
+        "installment_number": { "type": "INT", "nullable": false },
+        "due_date": { "type": "DATE", "nullable": false },
+        "principal_component": { "type": "DECIMAL(15,2)", "nullable": false },
+        "interest_component": { "type": "DECIMAL(15,2)", "nullable": false },
+        "total_installment_amount": { "type": "DECIMAL(15,2)", "nullable": false },
+        "ending_balance": { "type": "DECIMAL(15,2)", "nullable": false }
+      },
+      "foreign_keys": [
+        { "field": "application_id", "references": "loan_applications.application_id" }
+      ]
+    }
+  }
+}

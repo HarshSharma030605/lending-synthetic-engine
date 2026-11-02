@@ -1,0 +1,8 @@
+{
+  "total_applicants": 10000,
+  "total_applications": 6020,
+  "checks_passed": true,
+  "violations_found": [],
+  "schedule_reconciliation_errors": 0,
+  "ground_truth_audited": 120
+}

@@ -1,0 +1,9 @@
+# Core Data Pipelines & Analytics
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Optional Environment & Configuration
+python-dotenv>=1.0.0
+
+# Standard Library Dependencies (Pre-installed in Python 3.10+)
+# os, sys, math, random, json, datetime, typing, hashlib
